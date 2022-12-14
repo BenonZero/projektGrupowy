@@ -1,0 +1,1 @@
+Przygotowania architektury
