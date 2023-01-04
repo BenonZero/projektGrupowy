@@ -21,3 +21,7 @@ Wyjściem warstwy drugiej są 32 wektory o długości T
 Należy zauważyć że warsty pierwsza i druga są złożone na sobie w liczbie siedmiu!
 
 Wszystkie te wyjścia warstw drugich trafiają do pojedynczej warstwy gęstej która daje nam wynik w postaci (wedle przykładu) 20 logitów dla 20 badanych klas(słów) a na końcu za pomocą funcji SoftMax otrzymujemy procentowe oszacowanie prawdopodobieństwa wystąpienia danej klasy.
+
+
+nn.png (wcześniej .svg) Wykonano za pomocą narzędzia NN-SVG autorstwa Alex Lenail
+https://github.com/alexlenail/NN-SVG
