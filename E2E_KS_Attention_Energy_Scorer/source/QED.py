@@ -1,4 +1,4 @@
-from torch import tensor, nn, ones, onnx, functional as F, transpose
+from torch import tensor, nn, transpose
 # import numpy
 
 class QueryEncDec(nn.Module):
@@ -17,13 +17,14 @@ class QueryEncDec(nn.Module):
         X = [float(ord(i)) for i in X]
         print("str[" + str(len(X)) + "]")
         # repeat the X sequence in a loop so that len(X) = 256
+        # alternatively spread the X sequence to the desired length
         X = [X[i % len(X)] for i in range(256)]
         X = tensor([X]) # tensor(1, 256)
         print(X.size())
 
         Y = (d["gruencoder"]).forward(transpose(X, 0, 1))
         tmp = X
-        X = Y[0] # Y: tuple(data, metadata)
+        X = transpose(Y[0], 0, 1) # Y: tuple(data, metadata)
         print(X.size())
         Y = tmp
 
