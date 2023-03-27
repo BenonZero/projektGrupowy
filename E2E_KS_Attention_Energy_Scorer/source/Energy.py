@@ -28,9 +28,11 @@ class EneSc(nn.Module):
         for t in range(E_s.size()[0]):
             E_s[t] *= Att_weights[t]
         context = sum(context, 0)
+        # alt: context = sum(E_s, 0)
         energy_c = dot(context, context)
 
         r = energy_c / energy_s
+        # region comment
         # energy_c <= energy_s
         # therefore: use sigmoid for the treshold
         # One hidden layer is sufficient for a large majority of problems
@@ -41,6 +43,7 @@ class EneSc(nn.Module):
         # A good start is to use the average of the total number of neurons
         # in both the input and output layers
 
+        # endregion
         print(E_q.size())
         E_q = (d["MLP_FCL_IN"]).forward(E_q)
         print(E_q.size())
