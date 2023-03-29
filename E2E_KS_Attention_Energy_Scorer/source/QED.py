@@ -4,8 +4,8 @@ from torch import tensor, nn, transpose
 class QueryEncDec(nn.Module):
     def __init__(self) -> None:
         super().__init__()
-        self.add_module("gruencoder", nn.GRU(input_size = 1, hidden_size = 1, num_layers = 128))
-        self.add_module("grudecoder", nn.GRU(input_size = 1, hidden_size = 1, num_layers = 128))
+        self.add_module("gru_encoder", nn.GRU(input_size = 1, hidden_size = 1, num_layers = 128))
+        self.add_module("gru_decoder", nn.GRU(input_size = 1, hidden_size = 1, num_layers = 128))
         # batched input -> output(L,N,H)
 
     def forward(self, X:str):
@@ -22,10 +22,13 @@ class QueryEncDec(nn.Module):
         X = tensor([X]) # tensor(1, 256)
         print(X.size())
 
-        Y = (d["gruencoder"]).forward(transpose(X, 0, 1))
+        Y = (d["gru_encoder"]).forward(transpose(X, 0, 1))
         tmp = X
         X = transpose(Y[0], 0, 1) # Y: tuple(data, metadata)
         print(X.size())
         Y = tmp
 
         return X # query embeddings
+    
+        #TODO - DECODER
+        # X -> gru_ENCODER -> gru_DECODER -> X (taki sam)

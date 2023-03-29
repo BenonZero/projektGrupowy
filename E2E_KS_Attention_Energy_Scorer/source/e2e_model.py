@@ -21,20 +21,23 @@ mfcc_feat = mfcc(sig,rate) # -> array[n][13]
 mfcc_feat = [[float(i) for i in row] for row in mfcc_feat]
 # fbank_feat = logfbank(sig, rate)
 mfcc_feat = transpose(tensor(mfcc_feat), 0, 1)
+
 print()
 print("Speech EncDec")
-S = sed.forward(mfcc_feat)
+S = sed(mfcc_feat, training = False)
 # X = sed.forward(tensor([[float(i+j) for i in range(5)] for j in range(13)]))
 print()
 print("Query EncDec")
-Q = qed.forward("keyword")
+Q = qed("keyword")
 
 print()
 print("Attention Mechanism")
-A = att.forward(S, Q)
+A = att(S, Q)
 
 print()
 print("Energy Scorer")
-Decison = energy.forward(S, Q, A)
+Decison = energy(S, Q, A)
 
 print("Decision: " + str(Decison))
+
+# TODO: wyrzucic forwardy
