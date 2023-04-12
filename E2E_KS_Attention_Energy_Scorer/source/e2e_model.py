@@ -24,7 +24,7 @@ mfcc_feat = transpose(tensor(mfcc_feat), 0, 1)
 
 print()
 print("Speech EncDec")
-S = sed(mfcc_feat, training = False)
+S = sed(mfcc_feat)
 # X = sed.forward(tensor([[float(i+j) for i in range(5)] for j in range(13)]))
 print()
 print("Query EncDec")
@@ -39,5 +39,3 @@ print("Energy Scorer")
 Decison = energy(S, Q, A)
 
 print("Decision: " + str(Decison))
-
-# TODO: wyrzucic forwardy

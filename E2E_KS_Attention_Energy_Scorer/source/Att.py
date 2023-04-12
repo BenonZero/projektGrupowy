@@ -15,13 +15,13 @@ class AttMech(nn.Module):
         print("concat(" + str(E_s.size()) + ", " + str(E_s.size()[0]) + " * " + str(E_q.size()))
         print(catted.size())
 
-        catted = (d["LSTM"]).forward(catted)[0] # tuple(data, metadata)
+        catted = (d["LSTM"])(catted)[0] # tuple(data, metadata)
         print(catted.size())
 
-        catted = (d["FCL"]).forward(catted)
+        catted = (d["FCL"])(catted)
         print(catted.size())
 
-        catted = (d["sigmoid"]).forward(catted)
+        catted = (d["sigmoid"])(catted)
         print(catted.size())
 
         return catted # attention weights

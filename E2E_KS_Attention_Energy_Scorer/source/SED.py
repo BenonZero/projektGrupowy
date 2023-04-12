@@ -15,43 +15,44 @@ class SpeechEncDec(nn.Module):
         # batched input -> output(L,N,H)
         self.add_module("FCL", nn.Linear(in_features = 512, out_features = 1))
 
-    def forward(self, X, training : bool):
+    # def forward(self, X, training : bool):
+    def forward(self, X):
         modules = self.named_modules()
         d = dict(modules)
 
         print(X.size())
-        Y = (d["first_cnn"]).forward(X)
+        Y = (d["first_cnn"])(X)
         tmp = X
         X = Y
         print(X.size())
         Y = tmp
-        Y = (d["second_cnn"]).forward(X)
+        Y = (d["second_cnn"])(X)
         tmp = X
         X = Y
         print(X.size())
         Y = tmp
 
-        Y = (d["pool"]).forward(X)
+        Y = (d["pool"])(X)
         tmp = X
         X = Y
         print(X.size())
         Y = tmp
-        Y = (d["gru_encoder"]).forward(transpose(X, 0, 1))
+        Y = (d["gru_encoder"])(transpose(X, 0, 1))
         tmp = X
         X = Y[0] # Y: tuple(data, metadata)
         print(X.size())
         Y = tmp
 
-        Y = (d["encoder_relu"]).forward(X)
+        Y = (d["encoder_relu"])(X)
         tmp = X
         X = Y
         print(X.size())
         Y = tmp
 
-        if not training:
+        if not self.training:
             return X # speech embeddings
         
-        hidden = (d["gru_decoder"]).forward(X)[0] # transpose?
+        hidden = (d["gru_decoder"])(X)[0] # transpose?
         print(hidden.size())
 
         embeddings = X
@@ -79,7 +80,7 @@ class SpeechEncDec(nn.Module):
             catted = cat((h_t, c_t))
             # [kitty.item() for kitty in catted]
 
-            o_t = (d["FCL"]).forward(catted)
+            o_t = (d["FCL"])(catted)
             o_t = softmax(o_t, dim = 0)
 
             predictions.append(o_t.item())

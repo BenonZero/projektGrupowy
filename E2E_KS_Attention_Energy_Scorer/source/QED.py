@@ -9,6 +9,7 @@ class QueryEncDec(nn.Module):
         # batched input -> output(L,N,H)
 
     def forward(self, X:str):
+    # def forward(self, X:str, training : bool):
         modules = self.named_modules()
         d = dict(modules)
 
@@ -22,13 +23,18 @@ class QueryEncDec(nn.Module):
         X = tensor([X]) # tensor(1, 256)
         print(X.size())
 
-        Y = (d["gru_encoder"]).forward(transpose(X, 0, 1))
-        tmp = X
-        X = transpose(Y[0], 0, 1) # Y: tuple(data, metadata)
-        print(X.size())
-        Y = tmp
+        Y = (d["gru_encoder"])(transpose(X, 0, 1))
+        x_perv = X
+        X = Y
+        # X = transpose(Y[0], 0, 1) # Y: tuple(data, metadata)
+        print(X[0].size())
 
-        return X # query embeddings
-    
-        #TODO - DECODER
-        # X -> gru_ENCODER -> gru_DECODER -> X (taki sam)
+        if not self.training:
+            return transpose(X[0], 0, 1) # query embeddings
+
+        print(X)
+        hidden = (d["gru_decoder"])(X[0])
+        print(hidden)
+        # return all(x_perv == hidden)
+        return hidden
+        # returns the last hidden state of the GRU decoder

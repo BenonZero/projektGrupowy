@@ -45,13 +45,13 @@ class EneSc(nn.Module):
 
         # endregion
         print(E_q.size())
-        E_q = (d["MLP_FCL_IN"]).forward(E_q)
+        E_q = (d["MLP_FCL_IN"])(E_q)
         print(E_q.size())
-        E_q = (d["ReLU"]).forward(E_q)
+        E_q = (d["ReLU"])(E_q)
         print(E_q.size())
-        E_q = (d["MLP_FCL_OUT"]).forward(E_q)
+        E_q = (d["MLP_FCL_OUT"])(E_q)
         print(E_q.size())
-        E_q = (d["sigmoid"]).forward(E_q)
+        E_q = (d["sigmoid"])(E_q)
         print(E_q.size())
 
         r_th = E_q.item()
