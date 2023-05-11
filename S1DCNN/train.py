@@ -85,6 +85,7 @@ def pad_sequence(batch):
 
 
 def collate_fn(batch):
+    """A CO TO ROBI?"""
 
     # A data tuple has the form:
     # waveform, sample_rate, label, speaker_id, utterance_number
