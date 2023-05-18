@@ -9,3 +9,4 @@ E2E_KS_Attention_Energy_Scorer/model*
 
 E2E_KS_Attention_Energy_Scorer/source/__pycache__
 *.pyc
+*.wav
