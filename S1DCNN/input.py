@@ -1,15 +1,17 @@
 from glob import glob
+
+import numpy as np
 import torch
 import torch.nn as nn
 import matplotlib
 import librosa.display
 import matplotlib.pyplot as plt
 import torchaudio.transforms
-
-def crete_mfccs_vectors():
+from torchaudio.transforms import MFCC
+def create_mfccs_vectors():
     audio_files = glob('./SpeechCommands/speech_commands_v0.02/down/00b01445_nohash_0.wav')
     y, sr = librosa.load(audio_files[0])  # load .wav file
-    print(y)
+    #print(y)
     hop_length_samples = librosa.time_to_samples(0.01)  # liczba próbek odpowiadająca 10ms, mfcc shift
     frame_length_samples = librosa.time_to_samples(0.025)  # liczba próbek odpowiadająca 25ms, mfcc window
     mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13, hop_length=hop_length_samples,
@@ -30,12 +32,24 @@ def crete_mfccs_vectors():
     # Przekształcenie danych
     return tensor
 
-def crete_mfccs_vectors2(audio_file1):
+def create_mfccs_vectors2(audio_file1):
     hop_length_samples = librosa.time_to_samples(0.01)  # liczba próbek odpowiadająca 10ms, mfcc shift
     frame_length_samples = librosa.time_to_samples(0.025)  # liczba próbek odpowiadająca 25ms, mfcc window
     transform=torchaudio.transforms.MFCC(sample_rate=16000,n_mfcc=13,melkwargs={"n_fft":1000, "hop_length": hop_length_samples, "win_length": frame_length_samples})
     tensor=transform(audio_file1)
     mfccs=tensor
     tensor=torch.tensor(mfccs)
+    tensor=np.squeeze(tensor)
     return tensor
+
+def create_mfccs_vectors3(waveform):
+    sample_rate=16000
+    mfcc_transform=MFCC(
+        sample_rate=sample_rate,
+        n_mfcc=13
+    )
+
+    mfcc=mfcc_transform(waveform)
+    mfcc=np.squeeze(mfcc)
+    return mfcc
 

@@ -1,3 +1,4 @@
+
 from torch import optim
 from torch.optim import Adam
 from torch.utils.data import DataLoader
@@ -14,16 +15,17 @@ import torch.nn.functional as F
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import IPython.display as ipd
+import numpy as np
+
 print(torch.version.cuda)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
-number_of_vectors_layer_1 = 13                  #wejście warstwy 1 - 13 wektorów długości T
-number_of_filters = 32                          #liczba filtrów w każdej warstwie
-number_of_vectors_layer_2 = 32                  #1 wektor dla każdego filtra ^  (filtr 4 w warstwie 2 kożysta tylko z wyjścia filtra 4 w warstwie pierwszej)
-number_of_logits=20                             #liczba logitów na wyjściu
-kernel_size = 9
-number_of_networks = 7
+number_of_vectors_layer_1 = 13  # wejście warstwy 1 - 13 wektorów długości T
+number_of_filters = 35  # liczba filtrów w każdej warstwie
+number_of_vectors_layer_2 = 35  # 1 wektor dla każdego filtra ^  (filtr 4 w warstwie 2 kożysta tylko z wyjścia filtra 4 w warstwie pierwszej)
+kernel_size = 3
+
 
 class SubsetSC(SPEECHCOMMANDS):
     def __init__(self, subset: str = None):
@@ -48,18 +50,29 @@ class SubsetSC(SPEECHCOMMANDS):
 train_set = SubsetSC("training")
 test_set = SubsetSC("testing")
 
+#dlugosc=len(train_set)
+#train_set1=[]
+#for i in range(1,dlugosc):
+    #train_set1.append(input.crete_mfccs_vectors2(train_set[i][0]))
+    #print(train_set[i])
+
+#print(train_set[0][0])
 waveform, sample_rate, label, speaker_id, utterance_number = train_set[0]
-#waveform=waveform.flatten()
+
+# waveform=waveform.flatten()
 
 #mfccs=input.crete_mfccs_vectors2(waveform)
+#print(mfccs)
 #model = modelik.Stacked1DCNN(number_of_vectors_layer_1, number_of_vectors_layer_2, number_of_filters, kernel_size)
 #print("Model")
 #print(model)
-#model.forward(mfccs, number_of_networks)
+#model.forward(mfccs)
+#print(model)
 
 
 labels = sorted(list(set(datapoint[2] for datapoint in train_set)))
 
+#transformed=input.create_mfccs_vectors3(waveform)
 def label_to_index(word):
     # Return the position of the word in labels
     return torch.tensor(labels.index(word))
@@ -77,6 +90,7 @@ word_recovered = index_to_label(index)
 
 print(word_start, "-->", index, "-->", word_recovered)
 
+
 def pad_sequence(batch):
     # Make all tensor in a batch the same length by padding with zeros
     batch = [item.t() for item in batch]
@@ -90,23 +104,23 @@ def collate_fn(batch):
     # A data tuple has the form:
     # waveform, sample_rate, label, speaker_id, utterance_number
 
-    tensors, targets = [], []
 
     # Gather in lists, and encode labels as indices
+    tensors, targets = [], []
+    # Gather in lists, and encode labels as indices
     for waveform, _, label, *_ in batch:
-        waveform = waveform.flatten()
-        waveform1 = input.crete_mfccs_vectors2(waveform)
-        tensors += [waveform1]
+        #waveform1=waveform
+        #waveform=input.create_mfccs_vectors2(waveform1)
+        tensors += [waveform]
         targets += [label_to_index(label)]
 
     # Group the list of tensors into a batched tensor
     tensors = pad_sequence(tensors)
     targets = torch.stack(targets)
-
     return tensors, targets
 
 
-batch_size = 256
+batch_size = 35
 
 if device == "cuda":
     num_workers = 1
@@ -132,31 +146,32 @@ test_loader = torch.utils.data.DataLoader(
     num_workers=num_workers,
     pin_memory=pin_memory,
 )
-model=modelik.Stacked1DCNN(number_of_vectors_layer_1, len(labels), len(labels), kernel_size)
-
+model = modelik.Stacked1DCNN(number_of_vectors_layer_1, len(labels), len(labels) ,kernel_size)
+model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
-loss_fn=nn.CrossEntropyLoss()
+#loss_fn = nn.CrossEntropyLoss()
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+
+
 def train(model, epoch, log_interval):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-
-        #data = data.to(device)
-        #target = target.to(device)
-
+        data = data.to(device)
+        target = target.to(device)
+        data=input.create_mfccs_vectors3(data).to(device)
         # apply transform and model on whole batch directly on device
-        output = model(data,number_of_networks)
-       
+        output = model(data)
 
         # negative log-likelihood for a tensor of size (batch x 1 x n_output)
-        loss = loss_fn(output,target)
+        loss = F.nll_loss(output.squeeze(), target)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
         # print training stats
         if batch_idx % log_interval == 0:
-            print(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}")
+            print(
+                f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}")
 
         # update progress bar
         pbar.update(pbar_update)
@@ -178,14 +193,13 @@ def test(model, epoch):
     model.eval()
     correct = 0
     for data, target in test_loader:
-
-        #data = data.to(device)
-        #target = target.to(device)
+        data = data.to(device)
+        target = target.to(device)
 
         # apply transform and model on whole batch directly on device
-        #data = transform(data)
-        output = model(data,number_of_networks)
-        print(output)
+        data = input.create_mfccs_vectors3(data).to(device)
+        output = model(data)
+        #print(output)
 
         pred = get_likely_index(output)
         correct += number_of_correct(pred, target)
@@ -193,7 +207,9 @@ def test(model, epoch):
         # update progress bar
         pbar.update(pbar_update)
 
-    print(f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n")
+    print(
+        f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n")
+
 
 log_interval = 20
 n_epoch = 2
@@ -201,8 +217,8 @@ n_epoch = 2
 pbar_update = 1 / (len(train_loader) + len(test_loader))
 losses = []
 
-    # The transform needs to live on the same device as the model and the data.
-    #transform = transform.to(device)
+# The transform needs to live on the same device as the model and the data.
+#transform = transform.to(device)
 with tqdm(total=n_epoch) as pbar:
     for epoch in range(1, n_epoch + 1):
         train(model, epoch, log_interval)
