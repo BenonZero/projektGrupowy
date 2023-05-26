@@ -144,7 +144,7 @@ def train(model, epoch, log_interval):
         target = target.to(device)
 
         # apply transform and model on whole batch directly on device
-        data = transform(data)
+        data = transform(data).to(device)
 
         # for 2nd method - SED output is a string of length 50
         output = model(data)
@@ -383,10 +383,10 @@ transform = transform.to(device)
 with tqdm(total=n_epoch) as pbar:
     for epoch in range(1, n_epoch + 1):
         train(model, epoch, log_interval)
-        test(model, epoch)
-        scheduler.step()
         model_path = 'models/model{}/model_{}_{}'.format(args[0], timestamp, epoch)
         save(model.state_dict(), model_path)
+        test(model, epoch)
+        scheduler.step()
 
 
 # Let's plot the training loss versus the number of iteration.

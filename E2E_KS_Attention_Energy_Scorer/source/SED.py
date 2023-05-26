@@ -1,4 +1,6 @@
 from torch import nn, transpose, dot, tensor, softmax, cat, tensor, exp, sum, empty, vstack, zeros
+
+
 # from math import exp
 
 class SpeechEncDec(nn.Module):
@@ -11,13 +13,13 @@ class SpeechEncDec(nn.Module):
         self.add_module("second_cnn", nn.Conv1d(in_channels=128, out_channels=256, kernel_size=1))
         self.add_module("pool", nn.MaxPool1d(kernel_size=1, stride=2))
         # TODO: more layers in GRUs
-        self.add_module("gru_encoder", nn.GRU(input_size = 256, hidden_size = 256, num_layers = 1, batch_first = True))
+        self.add_module("gru_encoder", nn.GRU(input_size=256, hidden_size=256, num_layers=1, batch_first=True))
         self.add_module("encoder_relu", nn.ReLU())
-        self.add_module("gru_decoder", nn.GRU(input_size = 256, hidden_size = 256, num_layers = 1, batch_first = True))
+        self.add_module("gru_decoder", nn.GRU(input_size=256, hidden_size=256, num_layers=1, batch_first=True))
         # batched input -> output(L,N,H)
         # 26 is the nb of letters is english alphabet
         # was: 1
-        self.add_module("FCL", nn.Linear(in_features = 512, out_features = 26))
+        self.add_module("FCL", nn.Linear(in_features=512, out_features=26))
 
     # def forward(self, X, training : bool):
     def forward(self, X):
@@ -41,14 +43,9 @@ class SpeechEncDec(nn.Module):
         X = Y
         print(X.size())
         Y = tmp
-        #TODO: wywala przy transpozycji w skrypcie uczacym
+        # TODO: wywala przy transpozycji w skrypcie uczacym
         # Y, hidden_encoder = (d["gru_encoder"])(transpose(X, 0, 2))
         # Y, hidden_encoder = (d["gru_encoder"])(X)
-
-
-
-
-
 
         # Y, hidden_encoder = (d["gru_encoder"])(transpose(X, -2, -1))
         # # transposes two last dimensions of X ([...,x,y]->[...,y,x])
@@ -76,6 +73,10 @@ class SpeechEncDec(nn.Module):
 
         X = transpose(X, -2, -1)
         predictions_matrix = None
+
+        if len(X.size()) == 2:
+            X = X.unsqueeze(1)
+
         for batch in range(X.size()[0]):
             # first dimension -> batch size
 
@@ -85,7 +86,6 @@ class SpeechEncDec(nn.Module):
 
             if not predictions_matrix:
                 print("encoder out\n", X.size(), "\nencoder h\n", hidden_encoder.size())
-
 
             Y = (d["encoder_relu"])(X)
             (X, Y) = (Y, X)
@@ -108,11 +108,13 @@ class SpeechEncDec(nn.Module):
                     numerator = exp(dot(h[0], e_s))
                     # h[0] nie wyglada, ale to jest h[t]
 
-                    denominator = tensor([0.])
-                    
+                    denominator = None
                     for e_s_prim in X:
-                        denominator += exp(dot(h[0], e_s_prim))
-                    
+                        if denominator is None:
+                            denominator = exp(dot(h[0], e_s_prim))
+                        else:
+                            denominator += exp(dot(h[0], e_s_prim))
+
                     attention[i] = numerator / denominator
 
                 c_t = X[0] * attention[0]
@@ -123,7 +125,7 @@ class SpeechEncDec(nn.Module):
 
                 catted = cat((h[0], c_t))
                 o_t = (d["FCL"])(catted)
-                o_t = softmax(o_t, dim = 0)
+                o_t = softmax(o_t, dim=0)
 
                 if predictions is None:
                     predictions = o_t
@@ -136,7 +138,6 @@ class SpeechEncDec(nn.Module):
                 predictions_matrix = vstack((predictions_matrix, predictions))
         print("predictions_matrix:\n", predictions_matrix.size())
         return predictions_matrix
-
 
         # YAGNI
 
@@ -153,13 +154,13 @@ class SpeechEncDec(nn.Module):
 
         # # 
         # for h_t in hidden:
-            
+
         #     attention = empty(0)
         #     for e_s in embeddings:
         #         numerator = exp(dot(h_t, e_s))
 
         #         denominator = tensor([0.])
-                
+
         #         for e_s_prim in embeddings:
         #             denominator += exp(dot(h_t, e_s_prim))
         #         attention = cat((attention, (numerator / denominator)))
@@ -187,15 +188,8 @@ class SpeechEncDec(nn.Module):
         #     else:
         #         predictions = vstack((predictions, o_t))
 
-
-
-
-
-
-
-
         # # for h_t in hidden:
-            
+
         # #     attention = list()
         # #     for e_s in embeddings:
         # #         numerator = exp(dot(h_t, e_s))
