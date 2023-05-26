@@ -137,6 +137,7 @@ def train_one_epoch(epoch_index, tb_writer):
 
 def train(model, epoch, log_interval):
     model.train()
+    model.to(device)
     for batch_idx, (data, target) in enumerate(train_loader):
 
         data = data.to(device)
@@ -250,7 +251,7 @@ print("after sorting labels")
 
 #  we downsample the audio for faster processing without losing too much of the classification power
 # new_sample_rate = 8000
-new_sample_rate = 2000
+new_sample_rate = 256
 transform = torchaudio.transforms.Resample(
     orig_freq=sample_rate, new_freq=new_sample_rate)
 transformed = transform(waveform)
@@ -265,7 +266,8 @@ print(word_start, "-->", index, "-->", word_recovered)
 # if x.capitalize() != 'Y':
 #     exit()
 
-batch_size = 256
+batch_size = 12
+# batch_size = 128
 
 if device == "cuda":
     num_workers = 1

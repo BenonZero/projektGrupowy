@@ -24,6 +24,8 @@ class QueryEncDec(nn.Module):
         print(X.size())
 
         Y = (d["gru_encoder"])(transpose(X, 0, 1))
+        # TODO: The hidden state of the last time step of the GRU-Encoder is output as query embeddings
+        # query embeddings can be taken as initial states by GRU-Decoder
         x_perv = X
         X = Y
         # X = transpose(Y[0], 0, 1) # Y: tuple(data, metadata)
