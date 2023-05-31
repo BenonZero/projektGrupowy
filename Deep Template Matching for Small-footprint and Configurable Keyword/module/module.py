@@ -23,6 +23,9 @@ class DeepTemplateMatchingModule(torch.nn.Module):
 
     def forward(self, data):
         outputs = []
+
+        h0 = None
+        h1 = None
         for input_tuple in data:
             evaluation, template = input_tuple
             evaluation = torch.transpose(evaluation, 0, 1)
@@ -48,9 +51,12 @@ class DeepTemplateMatchingModule(torch.nn.Module):
             evaluation = self.linear1(evaluation)
             template = self.linear1(template)
 
-            # TODO: co zrobić z h0,h1?
-            evaluation, h0 = self.gru(evaluation)
-            template, h1 = self.gru(template)
+            if h1 is None or h0 is None:
+                evaluation, h0 = self.gru(evaluation)
+                template, h1 = self.gru(template)
+            else:
+                evaluation, h0 = self.gru(evaluation, h0)
+                template, h1 = self.gru(template, h1)
 
             # print("left the 1st module")
 

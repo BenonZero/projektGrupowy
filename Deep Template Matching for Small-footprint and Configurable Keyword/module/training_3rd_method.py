@@ -1,5 +1,5 @@
 import os
-import random
+# import random
 
 import torchaudio
 
@@ -14,7 +14,7 @@ from torchaudio.datasets import SPEECHCOMMANDS
 from tqdm import tqdm
 import torchaudio.transforms as transforms
 
-print(torch.version.cuda)
+# print(torch.version.cuda)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
@@ -77,7 +77,8 @@ word_start = "yes"
 index = label_to_index(word_start)
 word_recovered = index_to_label(index)
 
-print(word_start, "-->", index, "-->", word_recovered)
+
+# print(word_start, "-->", index, "-->", word_recovered)
 
 
 def pad_sequence(batch):
@@ -215,7 +216,12 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
 def train(model, epoch, log_interval):
     model.train()
+    loss = 0
+    # temp break
+    ctr = 0
+
     for batch_idx, (data, target) in enumerate(train_loader):
+        ctr += 1
 
         # data = data.to(device)
         # target = target.to(device)
@@ -238,6 +244,20 @@ def train(model, epoch, log_interval):
         pbar.update(pbar_update)
         # record loss
         losses.append(loss.item())
+        if ctr % 40 == 0:
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': loss,
+            }, "model" + str(ctr) + ".pt")
+        #     break
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': loss,
+    }, "model_ep1.pt")
 
 
 def number_of_correct(pred, target):
@@ -260,7 +280,7 @@ def test(model, epoch):
         # apply transform and model on whole batch directly on device
         # data = transform(data)
         output = model(data)
-        print(output)
+        # print(output)
 
         pred = get_likely_index(output)
         correct += number_of_correct(pred, target)
@@ -272,8 +292,9 @@ def test(model, epoch):
         f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n")
 
 
-log_interval = 20
-n_epoch = 2
+log_interval = 10
+# n_epoch = 2
+n_epoch = 1
 
 pbar_update = 1 / (len(train_loader) + len(test_loader))
 losses = []
