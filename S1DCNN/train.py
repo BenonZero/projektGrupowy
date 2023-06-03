@@ -70,7 +70,16 @@ waveform, sample_rate, label, speaker_id, utterance_number = train_set[0]
 #print(model)
 
 
-labels = sorted(list(set(datapoint[2] for datapoint in train_set)))
+labels = []
+try:
+    with open("labels.txt") as file:
+        labels = file.read().split()
+except:
+    labels = sorted(list(set(datapoint[2] for datapoint in train_set)))
+    with open("labels.txt", "w") as file:
+        for l in labels:
+            file.write(f"{l}\n")
+
 
 #transformed=input.create_mfccs_vectors3(waveform)
 def label_to_index(word):
@@ -117,10 +126,11 @@ def collate_fn(batch):
     # Group the list of tensors into a batched tensor
     tensors = pad_sequence(tensors)
     targets = torch.stack(targets)
+    targets=targets.type(torch.LongTensor)
     return tensors, targets
 
 
-batch_size = 35
+batch_size = 256
 
 if device == "cuda":
     num_workers = 1
@@ -146,10 +156,10 @@ test_loader = torch.utils.data.DataLoader(
     num_workers=num_workers,
     pin_memory=pin_memory,
 )
-model = modelik.Stacked1DCNN(number_of_vectors_layer_1, len(labels), len(labels) ,kernel_size)
+model = modelik.Stacked1DCNN(number_of_vectors_layer_1, number_of_filters,number_of_filters ,kernel_size)
 model.to(device)
-optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
-#loss_fn = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+loss_fn = nn.CrossEntropyLoss()
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
 
@@ -161,9 +171,10 @@ def train(model, epoch, log_interval):
         data=input.create_mfccs_vectors3(data).to(device)
         # apply transform and model on whole batch directly on device
         output = model(data)
-
+        #print(output)
+        #print(target)
         # negative log-likelihood for a tensor of size (batch x 1 x n_output)
-        loss = F.nll_loss(output.squeeze(), target)
+        loss = loss_fn(output, target)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -185,7 +196,7 @@ def number_of_correct(pred, target):
 
 
 def get_likely_index(tensor):
-    # find most likely label index for each element in the batch
+    # find most likely label index for each  element in the batch
     return tensor.argmax(dim=-1)
 
 
@@ -212,7 +223,7 @@ def test(model, epoch):
 
 
 log_interval = 20
-n_epoch = 2
+n_epoch = 5
 
 pbar_update = 1 / (len(train_loader) + len(test_loader))
 losses = []
