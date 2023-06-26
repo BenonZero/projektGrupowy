@@ -71,7 +71,6 @@ IMP = prev()
 def collate_fn_3r(batch):
     # A data tuple has the form:
     # waveform, sample_rate, label, speaker_id, utterance_number
-    # prev_tensor = [None] * 35
     tested_tensors, template_tensors, targets = [], [], []
 
     # Gather in lists, and encode labels as indices
@@ -159,8 +158,7 @@ loss_fn = nn.CrossEntropyLoss()
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
 
-# model_3drMeth_ep4
-# loading
+# uncomment to load and resume training
 
 # checkpoint = torch.load("model_3drMeth_ep4.pt", map_location=torch.device('cpu'))
 # model.load_state_dict(checkpoint['model_state_dict'])
@@ -172,11 +170,8 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 def train(model, epoch, log_interval):
     model.train()
     loss = 0
-    # ctr = 0
 
     for batch_idx, (tested, templates, target) in enumerate(train_loader):
-        # ctr += 1
-
         # data = data.to(device)
         # target = target.to(device)
 
@@ -236,7 +231,6 @@ def get_likely_index(tensor):
 
 def test(model, epoch):
     model.eval()
-    correct = 0
     correct_pos, correct_neg = 0, 0
     for evaluation, template, target in test_loader:
         # data = data.to(device)
@@ -247,9 +241,7 @@ def test(model, epoch):
         pred = get_likely_index(output)
         # assume output between 1 - 0 correct is > 80% yes
 
-        # correct += number_of_correct(pred, target)
         correct_pos, correct_neg = number_of_correct_pos(pred, target)
-        # correct = correct_neg + correct_neg
         # update progress bar
         pbar.update(pbar_update)
 
