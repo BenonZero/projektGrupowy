@@ -6,7 +6,7 @@
 * [Setup](#setup)
 
 ## Informacje ogólne
-This project is simple Lorem ipsum dolor generator.
+Ten projekt skład się z opracowań trzech metod wykrywania słów kluczowych w mowie ciągłej zamieszonych w odpowiadających folderach oraz aplikacji .z przygotowanymi modelami gotowej do uruchomienia w folderze Aplikacje.
 	
 ## Technologie
 Projekt tworzony przy pomocy:
@@ -14,4 +14,5 @@ Projekt tworzony przy pomocy:
 * torch library version: 2.0.1
 	
 ## Setup
-To run this project, install it locally 
+Aby uruchomić aplikacje należy zanstalować program Python oraz bibliotekę pytorch a następnie uruchomić wybraną aplikację z folderu Aplkacje.
+Aby rozpocząć uczenie należy pobrać pliki main oraz model z wybranego rodzaju modelu oraz uruchomić plik main; aby wybrać własne dane do uczenia konieczne jest zmodyfikowanie  zmiennych test_set, oraz test_set aby zawierały wybrany zbiór danych. 
