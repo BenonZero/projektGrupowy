@@ -14,5 +14,5 @@ Projekt tworzony przy pomocy:
 * torch library version: 2.0.1
 	
 ## Setup
-Aby uruchomić aplikacje należy zanstalować program Python oraz bibliotekę pytorch a następnie uruchomić wybraną aplikację z folderu Aplkacje.
+Aby uruchomić aplikacje należy zanstalować program Python oraz bibliotekę pytorch a następnie uruchomić wybraną aplikację z folderu Aplikacje.
 Aby rozpocząć uczenie należy pobrać pliki main oraz model z wybranego rodzaju modelu oraz uruchomić plik main; aby wybrać własne dane do uczenia konieczne jest zmodyfikowanie  zmiennych test_set, oraz test_set aby zawierały wybrany zbiór danych. 
